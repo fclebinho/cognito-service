@@ -10,6 +10,11 @@ import com.amazonaws.services.cognitoidp.model.ResendConfirmationCodeResult;
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesResult;
 import com.clebergomes.aws_cognito.model.User;
 import com.clebergomes.aws_cognito.repository.UserRepository;
+import com.clebergomes.aws_cognito.requests.ChangePasswordRequest;
+import com.clebergomes.aws_cognito.requests.ConfirmSignUpRequest;
+import com.clebergomes.aws_cognito.requests.ForgotPasswordRequest;
+import com.clebergomes.aws_cognito.requests.ResendConfirmationCodeRequest;
+import com.clebergomes.aws_cognito.requests.UpdateUserAttributesRequest;
 import com.clebergomes.aws_cognito.requests.UserRegistrationRequest;
 import com.clebergomes.aws_cognito.responses.UserLoginResponse;
 import com.clebergomes.aws_cognito.responses.UserRegistrationResponse;
@@ -54,29 +59,29 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public ConfirmSignUpResult confirmSignUp(String email, String confirmationCode) {
-    return cognitoService.confirmSignUp(email, confirmationCode);
+  public ConfirmSignUpResult confirmSignUp(ConfirmSignUpRequest request) {
+    return cognitoService.confirmSignUp(request.getEmail(), request.getConfirmationCode());
   }
 
   @Override
-  public ResendConfirmationCodeResult resendConfirmationCode(String email) {
-    return cognitoService.resendConfirmationCode(email);
+  public ResendConfirmationCodeResult resendConfirmationCode(ResendConfirmationCodeRequest request) {
+    return cognitoService.resendConfirmationCode(request.getEmail());
   }
 
   @Override
-  public UpdateUserAttributesResult updateUserAttributes(String accessToken, String email, String phoneNumber,
-      String fullName) {
-    return cognitoService.updateUserAttributes(accessToken, email, phoneNumber, fullName);
+  public UpdateUserAttributesResult updateUserAttributes(String accessToken, UpdateUserAttributesRequest request) {
+    return cognitoService.updateUserAttributes(accessToken, request.getEmail(), request.getPhoneNumber(),
+        request.getFullName());
   }
 
   @Override
-  public ChangePasswordResult changePassword(String accessToken, String previousPassword, String proposedPassword) {
-    return cognitoService.changePassword(accessToken, previousPassword, proposedPassword);
+  public ChangePasswordResult changePassword(String accessToken, ChangePasswordRequest request) {
+    return cognitoService.changePassword(accessToken, request.getPreviousPassword(), request.getProposedPassword());
   }
 
   @Override
-  public ForgotPasswordResult forgotPassword(String email) {
-    return cognitoService.forgotPassword(email);
+  public ForgotPasswordResult forgotPassword(ForgotPasswordRequest request) {
+    return cognitoService.forgotPassword(request.getEmail());
   }
 
 }

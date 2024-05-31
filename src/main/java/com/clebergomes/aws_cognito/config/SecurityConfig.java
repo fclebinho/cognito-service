@@ -21,6 +21,14 @@ public class SecurityConfig {
             .permitAll()
             .requestMatchers("/logout")
             .permitAll()
+
+            .requestMatchers("/confirm-sign-up")
+            .permitAll()
+            .requestMatchers("/resend-confirmation-code")
+            .permitAll()
+            .requestMatchers("/forgot-password")
+            .permitAll()
+
             .anyRequest()
             .authenticated());
 
