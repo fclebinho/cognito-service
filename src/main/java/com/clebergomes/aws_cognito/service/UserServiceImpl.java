@@ -4,7 +4,6 @@ import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import com.amazonaws.services.cognitoidp.model.ChangePasswordResult;
 import com.amazonaws.services.cognitoidp.model.ConfirmSignUpResult;
@@ -12,10 +11,9 @@ import com.amazonaws.services.cognitoidp.model.ForgotPasswordResult;
 import com.amazonaws.services.cognitoidp.model.ResendConfirmationCodeResult;
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesResult;
 import com.clebergomes.aws_cognito.exceptions.AccountAlreadyConfirmedException;
-import com.clebergomes.aws_cognito.exceptions.ArgumentNotValidException;
 import com.clebergomes.aws_cognito.exceptions.AuthorizeException;
 import com.clebergomes.aws_cognito.exceptions.CodeMismatchException;
-import com.clebergomes.aws_cognito.exceptions.UsernameExistsException;
+import com.clebergomes.aws_cognito.exceptions.UserExistsException;
 import com.clebergomes.aws_cognito.exceptions.UserNotConfirmedException;
 import com.clebergomes.aws_cognito.exceptions.UserNotFoundException;
 import com.clebergomes.aws_cognito.model.User;
@@ -57,7 +55,7 @@ public class UserServiceImpl implements UserService {
       if (e.toString().contains("UsernameExistsException")) {
         CompletableFuture.runAsync(() -> findOrCreateUser(request));
 
-        throw new UsernameExistsException();
+        throw new UserExistsException();
       }
 
       throw new AuthorizeException();

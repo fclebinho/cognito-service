@@ -4,16 +4,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.lang.Nullable;
 
-public class UsernameExistsException extends AuthorizeException {
+public class UserExistsException extends AuthorizeException {
 
   @Nullable
   private String detail;
 
-  public UsernameExistsException(String detail) {
+  public UserExistsException(String detail) {
     this.detail = detail;
   }
 
-  public UsernameExistsException() {
+  public UserExistsException() {
     this.detail = null;
   }
 
@@ -23,7 +23,7 @@ public class UsernameExistsException extends AuthorizeException {
 
     problemDetail.setTitle("User already exists");
     problemDetail.setDetail(detail);
-    problemDetail.setProperty("code", "UsernameExistsException");
+    problemDetail.setProperty("code", "UserExistsException");
 
     return problemDetail;
   }
