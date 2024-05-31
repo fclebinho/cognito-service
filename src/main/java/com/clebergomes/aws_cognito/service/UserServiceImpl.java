@@ -1,5 +1,7 @@
 package com.clebergomes.aws_cognito.service;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +10,8 @@ import com.amazonaws.services.cognitoidp.model.ConfirmSignUpResult;
 import com.amazonaws.services.cognitoidp.model.ForgotPasswordResult;
 import com.amazonaws.services.cognitoidp.model.ResendConfirmationCodeResult;
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesResult;
+import com.clebergomes.aws_cognito.exceptions.AuthorizeException;
+import com.clebergomes.aws_cognito.exceptions.UserAlreadyExistsException;
 import com.clebergomes.aws_cognito.model.User;
 import com.clebergomes.aws_cognito.repository.UserRepository;
 import com.clebergomes.aws_cognito.requests.ChangePasswordRequest;
@@ -32,25 +36,39 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public UserRegistrationResponse registerUser(UserRegistrationRequest input) {
+  public UserRegistrationResponse registerUser(UserRegistrationRequest request) {
     // Register the user with Amazon Cognito
     try {
-      UserRegistrationResponse userRegistrationResponse = cognitoService.registerUser(input);
+      UserRegistrationResponse response = cognitoService.registerUser(request);
+      User user = findOrCreateUser(request);
 
-      User registeredUser = new User();
-      registeredUser.setPhoneNumber(input.getPhoneNumber());
-      registeredUser.setEmail(input.getEmail());
-      registeredUser.setFullName(input.getFullName());
+      CompletableFuture.runAsync(() -> cognitoService.resendConfirmationCode(request.getEmail()));
 
-      User newUser = userRepository.save(registeredUser);
-
-      cognitoService.resendConfirmationCode(input.getEmail());
-      userRegistrationResponse.setId(newUser.getId());
-
-      return userRegistrationResponse;
+      response.setId(user.getId());
+      return response;
     } catch (Exception e) {
-      throw new RuntimeException("Error registering user", e);
+
+      if (e.toString().contains("UsernameExistsException")) {
+        CompletableFuture.runAsync(() -> findOrCreateUser(request));
+
+        throw new UserAlreadyExistsException();
+      }
+
+      throw new AuthorizeException();
     }
+  }
+
+  private User findOrCreateUser(UserRegistrationRequest request) {
+    if (userRepository.existsByEmail(request.getEmail())) {
+      return userRepository.findByEmail(request.getEmail()).get();
+    }
+
+    User registeredUser = new User();
+    registeredUser.setPhoneNumber(request.getPhoneNumber());
+    registeredUser.setEmail(request.getEmail());
+    registeredUser.setFullName(request.getFullName());
+
+    return userRepository.save(registeredUser);
   }
 
   @Override
