@@ -1,6 +1,6 @@
 services:
   app:
-    image: fclebinho/aws-cognito-authorization-server:latest
+    image: fclebinho/banking-api:latest
     build:
       context: .
     container_name: app
