@@ -84,6 +84,7 @@ public class UserController {
   public ResponseEntity<ChangePasswordResult> changePassword(
       @Valid @RequestHeader(name = "Authorization") String token,
       @RequestBody ChangePasswordRequest request) {
+    System.out.println(token);
     return ResponseEntity.ok(userService.changePassword(token, request));
   }
 

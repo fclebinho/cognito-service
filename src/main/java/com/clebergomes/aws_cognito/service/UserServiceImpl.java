@@ -4,14 +4,20 @@ import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import com.amazonaws.services.cognitoidp.model.ChangePasswordResult;
 import com.amazonaws.services.cognitoidp.model.ConfirmSignUpResult;
 import com.amazonaws.services.cognitoidp.model.ForgotPasswordResult;
 import com.amazonaws.services.cognitoidp.model.ResendConfirmationCodeResult;
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesResult;
+import com.clebergomes.aws_cognito.exceptions.AccountAlreadyConfirmedException;
+import com.clebergomes.aws_cognito.exceptions.ArgumentNotValidException;
 import com.clebergomes.aws_cognito.exceptions.AuthorizeException;
-import com.clebergomes.aws_cognito.exceptions.UserAlreadyExistsException;
+import com.clebergomes.aws_cognito.exceptions.CodeMismatchException;
+import com.clebergomes.aws_cognito.exceptions.UsernameExistsException;
+import com.clebergomes.aws_cognito.exceptions.UserNotConfirmedException;
+import com.clebergomes.aws_cognito.exceptions.UserNotFoundException;
 import com.clebergomes.aws_cognito.model.User;
 import com.clebergomes.aws_cognito.repository.UserRepository;
 import com.clebergomes.aws_cognito.requests.ChangePasswordRequest;
@@ -51,7 +57,7 @@ public class UserServiceImpl implements UserService {
       if (e.toString().contains("UsernameExistsException")) {
         CompletableFuture.runAsync(() -> findOrCreateUser(request));
 
-        throw new UserAlreadyExistsException();
+        throw new UsernameExistsException();
       }
 
       throw new AuthorizeException();
@@ -73,12 +79,32 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserLoginResponse loginUser(String email, String password) {
-    return cognitoService.loginUser(email, password);
+    try {
+      return cognitoService.loginUser(email, password);
+    } catch (Exception e) {
+      if (e.toString().contains("UserNotFoundException")) {
+        throw new UserNotFoundException();
+      } else if (e.toString().contains("UserNotConfirmedException")) {
+        throw new UserNotConfirmedException();
+      }
+      throw new AuthorizeException();
+    }
   }
 
   @Override
   public ConfirmSignUpResult confirmSignUp(ConfirmSignUpRequest request) {
-    return cognitoService.confirmSignUp(request.getEmail(), request.getConfirmationCode());
+    try {
+      return cognitoService.confirmSignUp(request.getEmail(), request.getConfirmationCode());
+
+    } catch (Exception e) {
+      if (e.toString().contains("NotAuthorizedException")) {
+        throw new AccountAlreadyConfirmedException();
+      } else if (e.toString().contains("CodeMismatchException")) {
+        throw new CodeMismatchException();
+      }
+
+      throw new AuthorizeException();
+    }
   }
 
   @Override

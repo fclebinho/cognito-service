@@ -9,6 +9,7 @@ public class AuthorizeException extends RuntimeException {
     var problemDetail = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
 
     problemDetail.setTitle("Authorize internal server error");
+    problemDetail.setProperty("code", "InternalServerErrorException");
 
     return problemDetail;
   }
