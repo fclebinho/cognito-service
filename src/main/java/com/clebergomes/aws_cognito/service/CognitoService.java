@@ -23,8 +23,6 @@ import com.amazonaws.services.cognitoidp.model.SignUpRequest;
 import com.amazonaws.services.cognitoidp.model.SignUpResult;
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesRequest;
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesResult;
-import com.amazonaws.services.cognitoidp.model.UserNotConfirmedException;
-import com.amazonaws.services.cognitoidp.model.UsernameExistsException;
 import com.clebergomes.aws_cognito.requests.UserRegistrationRequest;
 import com.clebergomes.aws_cognito.responses.UserLoginResponse;
 import com.clebergomes.aws_cognito.responses.UserRegistrationResponse;

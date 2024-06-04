@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public ConfirmSignUpResult confirmSignUp(ConfirmSignUpRequest request) {
     try {
-      return cognitoService.confirmSignUp(request.getEmail(), request.getCode());
+      return cognitoService.confirmSignUp(request.getEmail(), request.getConfirmationCode());
     } catch (AWSCognitoIdentityProviderException e) {
       throw new AuthorizeException(e);
     } catch (Exception e) {

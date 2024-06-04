@@ -22,7 +22,7 @@ public class SecurityConfig {
             .requestMatchers("/logout")
             .permitAll()
 
-            .requestMatchers("/confirm-sign-up")
+            .requestMatchers("/confirm-signup")
             .permitAll()
             .requestMatchers("/resend-confirmation-code")
             .permitAll()
