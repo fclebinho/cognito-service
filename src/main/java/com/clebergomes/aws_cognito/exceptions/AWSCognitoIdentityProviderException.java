@@ -13,9 +13,7 @@ public class AWSCognitoIdentityProviderException extends AuthorizeException {
     this.detail = detail;
   }
 
-  @Override
-  public ProblemDetail toProblemDetail() {
-
+  public ProblemDetail commonProblemDetail(String detail) {
     String[] errorMessages = detail.replaceAll("\\)", "").split("\\(");
     String[] titles = errorMessages[0].split(":");
 
@@ -35,6 +33,12 @@ public class AWSCognitoIdentityProviderException extends AuthorizeException {
     problemDetail.setProperty("status", Integer.parseInt(statusCode[1].trim()));
 
     return problemDetail;
+  }
+
+  @Override
+  public ProblemDetail toProblemDetail() {
+
+    return commonProblemDetail(detail);
   }
 
 }

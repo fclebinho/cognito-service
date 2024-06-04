@@ -61,7 +61,7 @@ public class UserController {
     }
   }
 
-  @PostMapping("/confirm-sign-up")
+  @PostMapping("/confirm-signup")
   public ResponseEntity<ConfirmSignUpResult> confirmSignUp(
       @Valid @RequestBody ConfirmSignUpRequest confirmSignUpRequest) {
 

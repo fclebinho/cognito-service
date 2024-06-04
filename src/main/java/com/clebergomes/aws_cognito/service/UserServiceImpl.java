@@ -37,18 +37,12 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public UserRegistrationResponse registerUser(UserRegistrationRequest request) {
-    System.out.println("*** request ***");
-    System.out.println(request);
+
     // Register the user with Amazon Cognito
     try {
       UserRegistrationResponse response = cognitoService.registerUser(request);
 
-      System.out.println("*** response ***");
-      System.out.println(response);
-
       User user = findOrCreateUser(request);
-      System.out.println("*** user ***");
-      System.out.println(user);
 
       CompletableFuture.runAsync(() -> cognitoService.resendConfirmationCode(request.getEmail()));
 
@@ -57,9 +51,8 @@ public class UserServiceImpl implements UserService {
     } catch (Exception e) {
 
       if (e.toString().contains("AWSCognitoIdentityProvider")) {
-        if (e.toString().contains("UsernameExistsException")) {
+        if (e.toString().contains("UsernameExistsException"))
           CompletableFuture.runAsync(() -> findOrCreateUser(request));
-        }
 
         throw new AWSCognitoIdentityProviderException(e.getMessage());
       }
@@ -86,13 +79,8 @@ public class UserServiceImpl implements UserService {
     try {
       return cognitoService.loginUser(email, password);
     } catch (Exception e) {
-      if (e.toString().contains("AWSCognitoIdentityProvider")) {
-        if (e.toString().contains("UserNotConfirmedException")) {
-          resendConfirmationCode(new ResendConfirmationCodeRequest(email));
-        }
-
+      if (e.toString().contains("AWSCognitoIdentityProvider"))
         throw new AWSCognitoIdentityProviderException(e.getMessage());
-      }
 
       throw new UnprocessableEntityException(e.getMessage());
     }
@@ -101,7 +89,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public ConfirmSignUpResult confirmSignUp(ConfirmSignUpRequest request) {
     try {
-      return cognitoService.confirmSignUp(request.getEmail(), request.getConfirmationCode());
+      return cognitoService.confirmSignUp(request.getEmail(), request.getCode());
 
     } catch (Exception e) {
       if (e.toString().contains("AWSCognitoIdentityProvider")) {
