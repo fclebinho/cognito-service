@@ -87,6 +87,10 @@ public class UserServiceImpl implements UserService {
       return cognitoService.loginUser(email, password);
     } catch (Exception e) {
       if (e.toString().contains("AWSCognitoIdentityProvider")) {
+        if (e.toString().contains("UserNotConfirmedException")) {
+          resendConfirmationCode(new ResendConfirmationCodeRequest(email));
+        }
+
         throw new AWSCognitoIdentityProviderException(e.getMessage());
       }
 
