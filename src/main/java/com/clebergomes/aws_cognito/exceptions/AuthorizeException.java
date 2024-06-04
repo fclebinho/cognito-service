@@ -1,15 +1,26 @@
 package com.clebergomes.aws_cognito.exceptions;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 
-public class AuthorizeException extends RuntimeException {
+import com.amazonaws.services.cognitoidp.model.AWSCognitoIdentityProviderException;
+
+public class AuthorizeException extends AWSCognitoIdentityProviderException {
+
+  public AuthorizeException(String message) {
+    super(message);
+  }
+
+  public AuthorizeException(AWSCognitoIdentityProviderException exception) {
+    super(exception.getErrorMessage());
+
+    this.setErrorCode(exception.getErrorCode());
+    this.setStatusCode(exception.getStatusCode());
+  }
 
   public ProblemDetail toProblemDetail() {
-    var problemDetail = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-
-    problemDetail.setTitle("Authorize internal server error");
-    problemDetail.setProperty("code", "InternalServerErrorException");
+    var problemDetail = ProblemDetail.forStatus(this.getStatusCode());
+    problemDetail.setTitle(this.getErrorMessage());
+    problemDetail.setProperty("code", this.getErrorCode());
 
     return problemDetail;
   }

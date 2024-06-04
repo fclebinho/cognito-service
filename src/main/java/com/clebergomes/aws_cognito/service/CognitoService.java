@@ -23,6 +23,8 @@ import com.amazonaws.services.cognitoidp.model.SignUpRequest;
 import com.amazonaws.services.cognitoidp.model.SignUpResult;
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesRequest;
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesResult;
+import com.amazonaws.services.cognitoidp.model.UserNotConfirmedException;
+import com.amazonaws.services.cognitoidp.model.UsernameExistsException;
 import com.clebergomes.aws_cognito.requests.UserRegistrationRequest;
 import com.clebergomes.aws_cognito.responses.UserLoginResponse;
 import com.clebergomes.aws_cognito.responses.UserRegistrationResponse;
@@ -83,26 +85,21 @@ public class CognitoService {
                 "USERNAME", email, // Use email as the username
                 "PASSWORD", password));
 
-    try {
-      InitiateAuthResult authResult = cognitoIdentityProvider.initiateAuth(authRequest);
+    InitiateAuthResult authResult = cognitoIdentityProvider.initiateAuth(authRequest);
 
-      AuthenticationResultType authResponse = authResult.getAuthenticationResult();
+    AuthenticationResultType authResponse = authResult.getAuthenticationResult();
 
-      // At this point, the user is successfully authenticated, and you can access JWT
-      // tokens:
-      String accessToken = authResponse.getAccessToken();
-      String idToken = authResponse.getIdToken();
-      String refreshToken = authResponse.getRefreshToken();
-      Integer expiresIn = authResponse.getExpiresIn();
-      String tokenType = authResponse.getTokenType();
+    // At this point, the user is successfully authenticated, and you can access JWT
+    // tokens:
+    String accessToken = authResponse.getAccessToken();
+    String idToken = authResponse.getIdToken();
+    String refreshToken = authResponse.getRefreshToken();
+    Integer expiresIn = authResponse.getExpiresIn();
+    String tokenType = authResponse.getTokenType();
 
-      // You can decode and verify the JWT tokens for user information
+    // You can decode and verify the JWT tokens for user information
 
-      return new UserLoginResponse(accessToken, expiresIn, tokenType, refreshToken, idToken);
-
-    } catch (Exception e) {
-      throw new RuntimeException("User login failed: " + e.getMessage(), e);
-    }
+    return new UserLoginResponse(accessToken, expiresIn, tokenType, refreshToken, idToken);
   }
 
   public ConfirmSignUpResult confirmSignUp(String email, String confirmationCode) {

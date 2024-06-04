@@ -5,13 +5,13 @@ import java.util.concurrent.CompletableFuture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.amazonaws.services.cognitoidp.model.AWSCognitoIdentityProviderException;
 import com.amazonaws.services.cognitoidp.model.ChangePasswordResult;
 import com.amazonaws.services.cognitoidp.model.ConfirmSignUpResult;
 import com.amazonaws.services.cognitoidp.model.ForgotPasswordResult;
 import com.amazonaws.services.cognitoidp.model.ResendConfirmationCodeResult;
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesResult;
-import com.clebergomes.aws_cognito.exceptions.AWSCognitoIdentityProviderException;
-import com.clebergomes.aws_cognito.exceptions.UnprocessableEntityException;
+import com.clebergomes.aws_cognito.exceptions.AuthorizeException;
 import com.clebergomes.aws_cognito.model.User;
 import com.clebergomes.aws_cognito.repository.UserRepository;
 import com.clebergomes.aws_cognito.requests.ChangePasswordRequest;
@@ -41,23 +41,16 @@ public class UserServiceImpl implements UserService {
     // Register the user with Amazon Cognito
     try {
       UserRegistrationResponse response = cognitoService.registerUser(request);
-
       User user = findOrCreateUser(request);
 
       CompletableFuture.runAsync(() -> cognitoService.resendConfirmationCode(request.getEmail()));
 
       response.setId(user.getId());
       return response;
+    } catch (AWSCognitoIdentityProviderException e) {
+      throw new AuthorizeException(e);
     } catch (Exception e) {
-
-      if (e.toString().contains("AWSCognitoIdentityProvider")) {
-        if (e.toString().contains("UsernameExistsException"))
-          CompletableFuture.runAsync(() -> findOrCreateUser(request));
-
-        throw new AWSCognitoIdentityProviderException(e.getMessage());
-      }
-
-      throw new UnprocessableEntityException(e.getMessage());
+      throw e;
     }
   }
 
@@ -78,11 +71,10 @@ public class UserServiceImpl implements UserService {
   public UserLoginResponse loginUser(String email, String password) {
     try {
       return cognitoService.loginUser(email, password);
+    } catch (AWSCognitoIdentityProviderException e) {
+      throw new AuthorizeException(e);
     } catch (Exception e) {
-      if (e.toString().contains("AWSCognitoIdentityProvider"))
-        throw new AWSCognitoIdentityProviderException(e.getMessage());
-
-      throw new UnprocessableEntityException(e.getMessage());
+      throw e;
     }
   }
 
@@ -90,19 +82,22 @@ public class UserServiceImpl implements UserService {
   public ConfirmSignUpResult confirmSignUp(ConfirmSignUpRequest request) {
     try {
       return cognitoService.confirmSignUp(request.getEmail(), request.getCode());
-
+    } catch (AWSCognitoIdentityProviderException e) {
+      throw new AuthorizeException(e);
     } catch (Exception e) {
-      if (e.toString().contains("AWSCognitoIdentityProvider")) {
-        throw new AWSCognitoIdentityProviderException(e.getMessage());
-      }
-
-      throw new UnprocessableEntityException(e.getMessage());
+      throw e;
     }
   }
 
   @Override
   public ResendConfirmationCodeResult resendConfirmationCode(ResendConfirmationCodeRequest request) {
-    return cognitoService.resendConfirmationCode(request.getEmail());
+    try {
+      return cognitoService.resendConfirmationCode(request.getEmail());
+    } catch (AWSCognitoIdentityProviderException e) {
+      throw new AuthorizeException(e);
+    } catch (Exception e) {
+      throw e;
+    }
   }
 
   @Override
