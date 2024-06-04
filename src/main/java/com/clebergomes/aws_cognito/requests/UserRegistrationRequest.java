@@ -11,6 +11,7 @@ public class UserRegistrationRequest {
   private String fullName;
 
   @Email(message = "Invalid email address")
+  @NotBlank(message = "Email is required")
   private String email;
 
   @NotBlank(message = "Phone number is required")

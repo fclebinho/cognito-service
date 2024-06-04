@@ -10,12 +10,8 @@ import com.amazonaws.services.cognitoidp.model.ConfirmSignUpResult;
 import com.amazonaws.services.cognitoidp.model.ForgotPasswordResult;
 import com.amazonaws.services.cognitoidp.model.ResendConfirmationCodeResult;
 import com.amazonaws.services.cognitoidp.model.UpdateUserAttributesResult;
-import com.clebergomes.aws_cognito.exceptions.AccountAlreadyConfirmedException;
-import com.clebergomes.aws_cognito.exceptions.AuthorizeException;
-import com.clebergomes.aws_cognito.exceptions.CodeMismatchException;
-import com.clebergomes.aws_cognito.exceptions.UserExistsException;
-import com.clebergomes.aws_cognito.exceptions.UserNotConfirmedException;
-import com.clebergomes.aws_cognito.exceptions.UserNotFoundException;
+import com.clebergomes.aws_cognito.exceptions.AWSCognitoIdentityProviderException;
+import com.clebergomes.aws_cognito.exceptions.UnprocessableEntityException;
 import com.clebergomes.aws_cognito.model.User;
 import com.clebergomes.aws_cognito.repository.UserRepository;
 import com.clebergomes.aws_cognito.requests.ChangePasswordRequest;
@@ -41,10 +37,18 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public UserRegistrationResponse registerUser(UserRegistrationRequest request) {
+    System.out.println("*** request ***");
+    System.out.println(request);
     // Register the user with Amazon Cognito
     try {
       UserRegistrationResponse response = cognitoService.registerUser(request);
+
+      System.out.println("*** response ***");
+      System.out.println(response);
+
       User user = findOrCreateUser(request);
+      System.out.println("*** user ***");
+      System.out.println(user);
 
       CompletableFuture.runAsync(() -> cognitoService.resendConfirmationCode(request.getEmail()));
 
@@ -52,13 +56,15 @@ public class UserServiceImpl implements UserService {
       return response;
     } catch (Exception e) {
 
-      if (e.toString().contains("UsernameExistsException")) {
-        CompletableFuture.runAsync(() -> findOrCreateUser(request));
+      if (e.toString().contains("AWSCognitoIdentityProvider")) {
+        if (e.toString().contains("UsernameExistsException")) {
+          CompletableFuture.runAsync(() -> findOrCreateUser(request));
+        }
 
-        throw new UserExistsException();
+        throw new AWSCognitoIdentityProviderException(e.getMessage());
       }
 
-      throw new AuthorizeException();
+      throw new UnprocessableEntityException(e.getMessage());
     }
   }
 
@@ -80,12 +86,11 @@ public class UserServiceImpl implements UserService {
     try {
       return cognitoService.loginUser(email, password);
     } catch (Exception e) {
-      if (e.toString().contains("UserNotFoundException")) {
-        throw new UserNotFoundException();
-      } else if (e.toString().contains("UserNotConfirmedException")) {
-        throw new UserNotConfirmedException();
+      if (e.toString().contains("AWSCognitoIdentityProvider")) {
+        throw new AWSCognitoIdentityProviderException(e.getMessage());
       }
-      throw new AuthorizeException();
+
+      throw new UnprocessableEntityException(e.getMessage());
     }
   }
 
@@ -95,13 +100,11 @@ public class UserServiceImpl implements UserService {
       return cognitoService.confirmSignUp(request.getEmail(), request.getConfirmationCode());
 
     } catch (Exception e) {
-      if (e.toString().contains("NotAuthorizedException")) {
-        throw new AccountAlreadyConfirmedException();
-      } else if (e.toString().contains("CodeMismatchException")) {
-        throw new CodeMismatchException();
+      if (e.toString().contains("AWSCognitoIdentityProvider")) {
+        throw new AWSCognitoIdentityProviderException(e.getMessage());
       }
 
-      throw new AuthorizeException();
+      throw new UnprocessableEntityException(e.getMessage());
     }
   }
 

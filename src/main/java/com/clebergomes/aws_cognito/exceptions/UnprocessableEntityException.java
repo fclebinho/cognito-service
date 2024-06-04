@@ -4,16 +4,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.lang.Nullable;
 
-public class UserExistsException extends AuthorizeException {
+public class UnprocessableEntityException extends AuthorizeException {
 
   @Nullable
   private String detail;
 
-  public UserExistsException(String detail) {
+  public UnprocessableEntityException(String detail) {
     this.detail = detail;
   }
 
-  public UserExistsException() {
+  public UnprocessableEntityException() {
     this.detail = null;
   }
 
@@ -21,9 +21,9 @@ public class UserExistsException extends AuthorizeException {
   public ProblemDetail toProblemDetail() {
     var problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
 
-    problemDetail.setTitle("User already exists");
+    problemDetail.setTitle("Unprocessable entity");
     problemDetail.setDetail(detail);
-    problemDetail.setProperty("code", "UserExistsException");
+    problemDetail.setProperty("code", "UnprocessableEntityException");
 
     return problemDetail;
   }
